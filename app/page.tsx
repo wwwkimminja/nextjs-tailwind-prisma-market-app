@@ -1,6 +1,10 @@
+import Card from "./components/Card";
 
 export default function Home() {
 return (
-  <main>Home</main>
+  <main>
+    <Card/>
+  </main>
+
 )
 }
