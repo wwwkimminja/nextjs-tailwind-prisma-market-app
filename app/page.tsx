@@ -1,10 +1,9 @@
-import Card from "./components/Card";
+import Input from './components/Input';
 
 export default function Home() {
-return (
-  <main>
-    <Card/>
-  </main>
-
-)
+  return (
+    <main>
+      <Input />
+    </main>
+  );
 }
