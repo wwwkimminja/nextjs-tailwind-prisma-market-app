@@ -1,9 +1,9 @@
-import Input from './components/Input';
+import List from './components/List';
 
 export default function Home() {
   return (
     <main>
-      <Input />
+      <List />
     </main>
   );
 }
