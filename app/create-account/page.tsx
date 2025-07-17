@@ -1,5 +1,7 @@
 import { ChatBubbleOvalLeftEllipsisIcon } from '@heroicons/react/24/solid';
 import Link from 'next/link';
+import FormInput from '@/components/form-input';
+import FormButton from '@/components/form-button';
 
 export default function CreateAccount() {
   return (
@@ -9,17 +11,32 @@ export default function CreateAccount() {
         <h2>Fill in the form below to create your account!</h2>
       </div>
       <form className="flex flex-col gap-3">
-        <div className="flex flex-col gap-2">
-          <input
-            className="bg-transparent rounded-md w-full h-10 p-2 focus:outline-none ring-1 focus:ring-2 ring-neutral-200 focus:ring-orange-500 border-none  placeholder:text-neutral-400"
-            type="text"
-            placeholder="Username"
-          />
-          <span className="text-red-500 text-sm">Input error</span>
-        </div>
-        <button className="primary-btn h-10" type="submit">
-          Create Account
-        </button>
+        <FormInput
+          type="text"
+          placeholder="Username"
+          required={true}
+          errors={[]}
+        />
+        <FormInput
+          type="email"
+          placeholder="Email"
+          required={true}
+          errors={[]}
+        />
+        <FormInput
+          type="password"
+          placeholder="Password"
+          required={true}
+          errors={[]}
+        />
+        <FormInput
+          type="password"
+          placeholder="Confirm Password"
+          required={true}
+          errors={[]}
+        />
+
+        <FormButton text="Create Account" type="submit" loading={false} />
       </form>
       <div className="w-full h-px bg-neutral-500" />
       <div>
@@ -30,7 +47,7 @@ export default function CreateAccount() {
           <span>
             <ChatBubbleOvalLeftEllipsisIcon className="h-6 w-6" />
           </span>
-          <span>Sine up with SMS</span>
+          <span>Sign up with SMS</span>
         </Link>
       </div>
     </div>
