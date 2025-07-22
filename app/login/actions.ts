@@ -1,20 +1,28 @@
 'use server';
 
-import {
-  PASSWORD_MIN_LENGTH,
-  PASSWORD_REGEX,
-  PASSWORD_REGEX_ERROR,
-} from '@/lib/constants';
+import db from '@/lib/db';
 import { z } from 'zod';
+import bcrypt from 'bcrypt';
+import { redirect } from 'next/navigation';
+import { getSession } from '@/lib/session';
+
+const checkEmail = async (email: string) => {
+  const user = await db.user.findUnique({
+    where: { email },
+    select: { id: true },
+  });
+  return Boolean(user);
+};
 
 const formSchema = z.object({
-  email: z.string().email().toLowerCase(),
-  password: z
-    .string({
-      error: 'Password is required',
-    })
-    .min(10, 'Password must be at least 10 characters long')
-    .regex(PASSWORD_REGEX, PASSWORD_REGEX_ERROR),
+  email: z
+    .string()
+    .email()
+    .toLowerCase()
+    .refine(checkEmail, 'An account with that email does not exist'),
+  password: z.string({
+    error: 'Password is required',
+  }),
 });
 
 export const login = async (prevState: any, formData: FormData) => {
@@ -23,16 +31,32 @@ export const login = async (prevState: any, formData: FormData) => {
     password: formData.get('password'),
   };
 
-  const result = formSchema.safeParse(data);
+  const result = await formSchema.safeParseAsync(data);
 
   if (!result.success) {
-    return {
-      fieldErrors: result.error.flatten().fieldErrors,
-      data: data,
-    };
+  } else {
+    //find a user with the email
+    const user = await db.user.findUnique({
+      where: { email: result.data.email },
+      select: { id: true, password: true },
+    });
+
+    if (user) {
+      const isPasswordValid = await bcrypt.compare(
+        result.data.password,
+        user.password
+      );
+
+      if (isPasswordValid) {
+        const session = await getSession();
+        session.id = user.id;
+        redirect('/profile');
+      } else {
+        return {
+          fieldErrors: { password: ['Wrong password'] },
+          data: data,
+        };
+      }
+    }
   }
-  await new Promise(resolve => setTimeout(resolve, 3000));
-  return {
-    result: 'OK',
-  };
 };
