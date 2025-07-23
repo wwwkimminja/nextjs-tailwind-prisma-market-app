@@ -5,7 +5,7 @@ interface Session {
   id?: number;
 }
 
-export const getSession = async (): Promise<Session> => {
+export const getSession = async () => {
   const session = await getIronSession<Session>(await cookies(), {
     cookieName: 'carrot-market-reloaded',
     password: process.env.COOKIE_PASSWORD!,
