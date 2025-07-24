@@ -1,7 +1,14 @@
 import { getSession } from '@/lib/session';
 import { NextRequest, NextResponse } from 'next/server';
 
-const publicRoutes = ['/', '/login', '/sms', '/create-account'];
+const publicRoutes = [
+  '/',
+  '/login',
+  '/sms',
+  '/create-account',
+  '/github/start',
+  '/github/complete',
+];
 
 export async function middleware(request: NextRequest) {
   const session = await getSession();
