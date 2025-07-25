@@ -8,8 +8,7 @@ import {
 import db from '@/lib/db';
 import { z } from 'zod';
 import bcrypt from 'bcrypt';
-import { redirect } from 'next/navigation';
-import { getSession } from '@/lib/session';
+import { loginUser, checkUserExists } from '@/lib/auth';
 
 const formSchema = z
   .object({
@@ -24,32 +23,9 @@ const formSchema = z
       .regex(PASSWORD_REGEX, PASSWORD_REGEX_ERROR),
     confirmPassword: z.string(),
   })
-
   .superRefine(async ({ email }, ctx) => {
-    const user = await db.user.findUnique({
-      where: { email },
-      select: { id: true },
-    });
-    if (user) {
-      ctx.addIssue({
-        code: 'custom',
-        message: 'Username is already taken',
-        path: ['username'],
-        fatal: true,
-      });
-      return z.NEVER;
-    }
-  })
-  .superRefine(async ({ email }, ctx) => {
-    const user = await db.user.findUnique({
-      where: {
-        email,
-      },
-      select: {
-        id: true,
-      },
-    });
-    if (user) {
+    const userExists = await checkUserExists(email);
+    if (userExists) {
       ctx.addIssue({
         code: 'custom',
         message: 'This email is already taken',
@@ -98,10 +74,5 @@ export const createAccount = async (prevState: any, formData: FormData) => {
     },
   });
 
-  //log the user in
-  const session = await getSession();
-  session.id = user.id;
-  await session.save();
-
-  redirect('/profile');
+  await loginUser(user.id);
 };

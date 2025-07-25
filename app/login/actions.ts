@@ -3,23 +3,14 @@
 import db from '@/lib/db';
 import { z } from 'zod';
 import bcrypt from 'bcrypt';
-import { redirect } from 'next/navigation';
-import { getSession } from '@/lib/session';
-
-const checkEmail = async (email: string) => {
-  const user = await db.user.findUnique({
-    where: { email },
-    select: { id: true },
-  });
-  return Boolean(user);
-};
+import { findUserByEmail, loginUser, checkUserExists } from '@/lib/auth';
 
 const formSchema = z.object({
   email: z
     .string()
     .email()
     .toLowerCase()
-    .refine(checkEmail, 'An account with that email does not exist'),
+    .refine(checkUserExists, 'An account with that email does not exist'),
   password: z.string({
     error: 'Password is required',
   }),
@@ -34,30 +25,27 @@ export const login = async (prevState: any, formData: FormData) => {
   const result = await formSchema.safeParseAsync(data);
 
   if (!result.success) {
-  } else {
-    //find a user with the email
-    const user = await db.user.findUnique({
-      where: { email: result.data.email },
-      select: { id: true, password: true },
-    });
+    return {
+      fieldErrors: result.error.flatten().fieldErrors,
+      data: data,
+    };
+  }
 
-    if (user) {
-      const isPasswordValid = await bcrypt.compare(
-        result.data.password,
-        user.password
-      );
+  const user = await findUserByEmail(result.data.email);
 
-      if (isPasswordValid) {
-        const session = await getSession();
-        session.id = user.id;
-        await session.save();
-        redirect('/profile');
-      } else {
-        return {
-          fieldErrors: { password: ['Wrong password'] },
-          data: data,
-        };
-      }
+  if (user) {
+    const isPasswordValid = await bcrypt.compare(
+      result.data.password,
+      user.password
+    );
+
+    if (isPasswordValid) {
+      await loginUser(user.id);
+    } else {
+      return {
+        fieldErrors: { password: ['Wrong password'] },
+        data: data,
+      };
     }
   }
 };
