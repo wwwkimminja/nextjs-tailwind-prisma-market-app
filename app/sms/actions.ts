@@ -1,6 +1,7 @@
 'use server';
 
 import { z } from 'zod';
+
 import validator from 'validator';
 import { redirect } from 'next/navigation';
 import db from '@/lib/db';
@@ -87,6 +88,16 @@ export const smsLogin = async (prevState: ActionState, formData: FormData) => {
         },
       },
     });
+
+    // const twilioClient = twilio(
+    //   process.env.TWILIO_ACCOUNT_SID,
+    //   process.env.TWILIO_AUTH_TOKEN
+    // );
+    // await twilioClient.messages.create({
+    //   to: result.data
+    //   from: process.env.TWILIO_PHONE_NUMBER!,
+    //   body: `Your Carrot Market login token is ${token}`,
+    // });
 
     return {
       token: true,
