@@ -1,9 +1,9 @@
 'use server';
 
-import db from '@/lib/db';
 import { z } from 'zod';
 import bcrypt from 'bcrypt';
 import { findUserByEmail, loginUser, checkUserExists } from '@/lib/auth';
+import { redirect } from 'next/navigation';
 
 const formSchema = z.object({
   email: z
@@ -41,6 +41,7 @@ export const login = async (prevState: any, formData: FormData) => {
 
     if (isPasswordValid) {
       await loginUser(user.id);
+      return redirect('/profile');
     } else {
       return {
         fieldErrors: { password: ['Wrong password'] },

@@ -8,7 +8,8 @@ import {
 import db from '@/lib/db';
 import { z } from 'zod';
 import bcrypt from 'bcrypt';
-import { loginUser, checkUserExists } from '@/lib/auth';
+import { checkUserExists, loginUser } from '@/lib/auth';
+import { redirect } from 'next/navigation';
 
 const formSchema = z
   .object({
@@ -75,4 +76,5 @@ export const createAccount = async (prevState: any, formData: FormData) => {
   });
 
   await loginUser(user.id);
+  redirect('/profile');
 };

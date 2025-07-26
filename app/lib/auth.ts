@@ -1,6 +1,5 @@
 import db from '@/lib/db';
 import { getSession } from '@/lib/session';
-import { redirect } from 'next/navigation';
 
 // ユーザーをIDで検索する共通関数
 export async function findUserById(id: number) {
@@ -30,7 +29,6 @@ export async function loginUser(userId: number) {
   const session = await getSession();
   session.id = userId;
   await session.save();
-  redirect('/profile');
 }
 
 // ユーザーが存在するかチェックする共通関数
