@@ -48,11 +48,6 @@ export default function CreateAccount() {
         />
 
         <FormButton text="Create Account" />
-        {state?.result === 'OK' && (
-          <div className="text-green-500 text-sm">
-            <p>Account created successfully!</p>
-          </div>
-        )}
       </form>
       <div className="w-full h-px bg-neutral-500" />
       <SocialLogin />
