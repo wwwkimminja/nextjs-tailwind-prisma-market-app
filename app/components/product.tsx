@@ -1,4 +1,4 @@
-import { formaToYen, formatToTimeAgo } from '@/lib/utils';
+import { formatToYen, formatToTimeAgo } from '@/lib/utils';
 import Image from 'next/image';
 import Link from 'next/link';
 
@@ -25,8 +25,8 @@ export default function Product({
         </div>
         <div className="flex flex-col gap-1 *:text-white">
           <span>{title}</span>
-          <span>{formatToTimeAgo(created_at)}前</span>
-          <span className="font-bold">{formaToYen(price)}円</span>
+          <span>{formatToTimeAgo(created_at.toString())}前</span>
+          <span className="font-bold">{formatToYen(price)}円</span>
         </div>
       </Link>
     </div>

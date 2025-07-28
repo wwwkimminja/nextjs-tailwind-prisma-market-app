@@ -1,8 +1,8 @@
-export const formaToYen = (price: number) => {
+export const formatToYen = (price: number) => {
   return price.toLocaleString('jp-JP');
 };
 
-export const formatToTimeAgo = (date: Date) => {
+export const formatToTimeAgo = (date: string) => {
   const dayInMs = 1000 * 60 * 60 * 24;
 
   const time = new Date(date).getTime();

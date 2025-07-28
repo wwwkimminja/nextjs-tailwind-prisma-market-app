@@ -1,8 +1,8 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
-import ListProduct from './product';
 import { InitialProduct } from '@/(tabs)/products/page';
 import { loadMoreProducts } from '@/(tabs)/products/actions';
+import Product from './product';
 
 interface ProductListProps {
   initialProducts: InitialProduct;
@@ -48,7 +48,7 @@ export default function ProductList({ initialProducts }: ProductListProps) {
   return (
     <div className="p-5 flex flex-col gap-5">
       {products.map(product => (
-        <ListProduct key={product.id} {...product} />
+        <Product key={product.id} {...product} />
       ))}
       {!isLastPage ? (
         <span
