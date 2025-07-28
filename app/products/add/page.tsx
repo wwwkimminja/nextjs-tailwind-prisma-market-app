@@ -3,34 +3,70 @@
 import Button from '@/components/form-button';
 import Input from '@/components/form-input';
 import { PhotoIcon } from '@heroicons/react/24/solid';
-import { useState } from 'react';
-import { addProduct } from './actions';
-import { useFormState } from 'react-dom';
-
-const MAX_FILE_SIZE = 3 * 1024 * 1024; // 3MB
+import { useState, useActionState, useEffect } from 'react';
+import { addProduct, getUploadURL } from './actions';
 
 export default function AddProduct() {
   const [preview, setPreview] = useState('');
-  const [state, action] = useFormState(addProduct, {
+
+  const [uploadURL, setUploadURL] = useState('');
+  const [imageId, setImageId] = useState('');
+  const [hash, setHash] = useState('');
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const onImageChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const {
+      target: { files },
+    } = event;
+    if (!files) {
+      return;
+    }
+
+    const file = files[0];
+    const url = URL.createObjectURL(file);
+    setPreview(url);
+
+    // Only fetch upload URL after component is mounted
+    if (mounted) {
+      const { success, result, hash: cloudflareHash } = await getUploadURL();
+      if (success) {
+        setUploadURL(result.uploadURL);
+        setImageId(result.id);
+        setHash(cloudflareHash);
+      }
+    }
+  };
+
+  const interceptAction = async (_: any, formData: FormData) => {
+    const file = formData.get('photo');
+    if (!file) {
+      return;
+    }
+    const cloudflareForm = new FormData();
+    cloudflareForm.append('file', file);
+    const response = await fetch(uploadURL, {
+      method: 'post',
+      body: cloudflareForm,
+    });
+    const responseData = await response.json();
+    console.log(responseData);
+    if (response.status !== 200) {
+      return;
+    }
+
+    const photoUrl = `https://imagedelivery.net/${hash}/${imageId}`;
+    formData.set('photo', photoUrl);
+    return addProduct(_, formData);
+  };
+
+  const [state, action] = useActionState(interceptAction, {
     fieldErrors: {},
     formErrors: [],
   });
-
-  const onImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      if (file.size > MAX_FILE_SIZE) {
-        alert(
-          `File size must be less than 3MB. Current file size: ${(file.size / (1024 * 1024)).toFixed(2)}MB`
-        );
-        event.target.value = ''; // Clear the input
-        return;
-      }
-
-      const url = URL.createObjectURL(file);
-      setPreview(url);
-    }
-  };
 
   return (
     <div>
@@ -62,21 +98,21 @@ export default function AddProduct() {
           required
           placeholder="title"
           type="text"
-          errors={state.fieldErrors.title}
+          errors={state?.fieldErrors.title}
         />
         <Input
           name="price"
           type="number"
           required
           placeholder="price"
-          errors={state.fieldErrors.price}
+          errors={state?.fieldErrors.price}
         />
         <Input
           name="description"
           type="text"
           required
           placeholder="description"
-          errors={state.fieldErrors.description}
+          errors={state?.fieldErrors.description}
         />
         <Button text="Add product" />
       </form>

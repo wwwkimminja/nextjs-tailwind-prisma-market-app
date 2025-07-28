@@ -71,3 +71,22 @@ export async function addProduct(prevState: any, formData: FormData) {
 
   redirect(`/products/${product.id}`);
 }
+
+export async function getUploadURL() {
+  const accountId = process.env.CLOUDFLARE_ACCOUNT_ID;
+  const apiToken = process.env.CLOUDFLARE_API_TOKEN;
+  const hash = process.env.CLOUDFLARE_HASH;
+
+  const response = await fetch(
+    `https://api.cloudflare.com/client/v4/accounts/${accountId}/images/v2/direct_upload`,
+    {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${apiToken}`,
+      },
+    }
+  );
+  const data = await response.json();
+
+  return { ...data, hash };
+}
