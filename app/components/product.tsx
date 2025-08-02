@@ -29,7 +29,7 @@ export default function Product({
       <Link href={`/products/${id}`} className="">
         <div className="relative size-28 rounded-md overflow-hidden">
           <Image
-            sizes="28px"
+            sizes="100%"
             src={`${photo}/avatar`}
             alt={title}
             fill
