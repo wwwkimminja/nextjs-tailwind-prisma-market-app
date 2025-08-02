@@ -1,21 +1,14 @@
 'use server';
 
 import db from '@/lib/db';
-import { z } from 'zod';
 import fs from 'fs/promises';
 import { getSession } from '@/lib/session';
 import { redirect } from 'next/navigation';
-
-const productSchema = z.object({
-  title: z.string().min(1, 'Title is required'),
-  price: z.coerce.number().min(1, 'Price is required'),
-  description: z.string().min(1, 'Description is required'),
-  photo: z.string().min(1, 'Photo is required'),
-});
+import { productSchema } from './schema';
 
 const MAX_FILE_SIZE = 3 * 1024 * 1024; // 3MB
 
-export async function addProduct(prevState: any, formData: FormData) {
+export async function addProduct(formData: FormData) {
   const data = {
     photo: formData.get('photo'),
     title: formData.get('title'),

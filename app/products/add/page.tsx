@@ -3,16 +3,26 @@
 import Button from '@/components/form-button';
 import Input from '@/components/form-input';
 import { PhotoIcon } from '@heroicons/react/24/solid';
-import { useState, useActionState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { addProduct, getUploadURL } from './actions';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { productSchema, ProductType } from './schema';
 
 export default function AddProduct() {
   const [preview, setPreview] = useState('');
-
   const [uploadURL, setUploadURL] = useState('');
-  const [imageId, setImageId] = useState('');
-  const [hash, setHash] = useState('');
   const [mounted, setMounted] = useState(false);
+  const [file, setFile] = useState<File | null>(null);
+
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    formState: { errors },
+  } = useForm({
+    resolver: zodResolver(productSchema),
+  });
 
   useEffect(() => {
     setMounted(true);
@@ -29,20 +39,25 @@ export default function AddProduct() {
     const file = files[0];
     const url = URL.createObjectURL(file);
     setPreview(url);
+    setFile(file);
 
     // Only fetch upload URL after component is mounted
     if (mounted) {
-      const { success, result, hash: cloudflareHash } = await getUploadURL();
-      if (success) {
-        setUploadURL(result.uploadURL);
-        setImageId(result.id);
-        setHash(cloudflareHash);
+      try {
+        const { success, result, hash: cloudflareHash } = await getUploadURL();
+
+        if (success) {
+          const photoUrl = `https://imagedelivery.net/${cloudflareHash}/${result.id}`;
+          setUploadURL(result.uploadURL);
+          setValue('photo', photoUrl);
+        }
+      } catch (error) {
+        console.log(error);
       }
     }
   };
 
-  const interceptAction = async (_: any, formData: FormData) => {
-    const file = formData.get('photo');
+  const onSubmit = handleSubmit(async (data: ProductType) => {
     if (!file) {
       return;
     }
@@ -58,19 +73,21 @@ export default function AddProduct() {
       return;
     }
 
-    const photoUrl = `https://imagedelivery.net/${hash}/${imageId}`;
-    formData.set('photo', photoUrl);
-    return addProduct(_, formData);
-  };
-
-  const [state, action] = useActionState(interceptAction, {
-    fieldErrors: {},
-    formErrors: [],
+    const formData = new FormData();
+    formData.append('title', data.title);
+    formData.append('price', data.price.toString());
+    formData.append('description', data.description);
+    formData.append('photo', data.photo);
+    return addProduct(formData);
   });
+
+  const onValid = async () => {
+    await onSubmit();
+  };
 
   return (
     <div>
-      <form action={action} className="p-5 flex flex-col gap-5">
+      <form action={onValid} className="p-5 flex flex-col gap-5">
         <label
           htmlFor="photo"
           style={{ backgroundImage: `url(${preview})` }}
@@ -80,7 +97,7 @@ export default function AddProduct() {
             <>
               <PhotoIcon className="w-20" />
               <div className="text-neutral-400 text-sm">
-                Add a photo{state?.fieldErrors.photo}
+                Add a photo{errors.photo?.message}
               </div>
             </>
           )}
@@ -94,25 +111,25 @@ export default function AddProduct() {
           className="hidden"
         />
         <Input
-          name="title"
           required
           placeholder="title"
           type="text"
-          errors={state?.fieldErrors.title}
+          {...register('title')}
+          errors={[errors.title?.message ?? '']}
         />
         <Input
-          name="price"
           type="number"
           required
           placeholder="price"
-          errors={state?.fieldErrors.price}
+          {...register('price')}
+          errors={[errors.price?.message ?? '']}
         />
         <Input
-          name="description"
           type="text"
           required
           placeholder="description"
-          errors={state?.fieldErrors.description}
+          {...register('description')}
+          errors={[errors.description?.message ?? '']}
         />
         <Button text="Add product" />
       </form>
