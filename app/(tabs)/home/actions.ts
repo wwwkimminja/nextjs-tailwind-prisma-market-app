@@ -9,11 +9,14 @@ export async function loadMoreProducts(page: number) {
       photo: true,
       id: true,
     },
-    skip: page * 1,
-    take: 1,
+    skip: page * 10,
+    take: 10,
     orderBy: {
       created_at: 'desc',
     },
   });
-  return products;
+  return products.map(product => ({
+    ...product,
+    created_at: product.created_at.toISOString(), // Convert to ISO string here
+  }));
 }

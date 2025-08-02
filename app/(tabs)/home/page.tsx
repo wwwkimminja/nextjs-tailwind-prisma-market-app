@@ -18,7 +18,10 @@ async function getProducts() {
       created_at: 'desc',
     },
   });
-  return products;
+  return products.map(product => ({
+    ...product,
+    created_at: product.created_at.toISOString(), // Convert to ISO string here
+  }));
 }
 export type InitialProduct = Prisma.PromiseReturnType<typeof getProducts>;
 
